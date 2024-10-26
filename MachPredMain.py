@@ -12,10 +12,14 @@ data.drop(columns=['UDI'], inplace=True, errors='ignore')
 
 # Encode categorical columns if they exist
 le = LabelEncoder()
+
+# Encode 'Failure Type' if it's present in the data
 if 'Failure Type' in data.columns:
     data['Failure Type'] = le.fit_transform(data['Failure Type'])
-    print("Label Encoded Failure Types:\n", data[['Failure Type']].head())
+    print("Label Encoded Failure Types:\n", data[['Failure Type']])
 
+
+# Encode 'Type' column if it exists in the data
 if 'Type' in data.columns:
     data['Type'] = le.fit_transform(data['Type'])
 
