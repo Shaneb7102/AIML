@@ -1,5 +1,5 @@
 import pandas as pd
-import sklearn
+from sklearn.preprocessing import LabelEncoder
 
 # Specify the path to your CSV file
 file_path = 'datasets/predictive_maintenance.csv'
@@ -7,20 +7,20 @@ file_path = 'datasets/predictive_maintenance.csv'
 # Load only the first 10,000 rows
 data = pd.read_csv(file_path, nrows=10000)
 
+# Drop unnecessary columns
+data.drop(columns=['UDI'], inplace=True, errors='ignore')
 
-data.drop(columns=['UDI'], inplace=True)
-
-from sklearn.preprocessing import LabelEncoder
-
+# Encode categorical columns if they exist
+le = LabelEncoder()
 if 'Failure Type' in data.columns:
-    le = LabelEncoder()
     data['Failure Type'] = le.fit_transform(data['Failure Type'])
     print("Label Encoded Failure Types:\n", data[['Failure Type']].head())
 
+if 'Type' in data.columns:
+    data['Type'] = le.fit_transform(data['Type'])
 
-#drop rows with empty values
+# Drop rows with empty values
 data_cleaned = data.dropna()
 
-
-# Display the first few rows to confirm it loaded correctly
-print(data_cleaned)
+# Display the first few rows of the cleaned dataset
+print("Cleaned Data:\n", data_cleaned.head())
