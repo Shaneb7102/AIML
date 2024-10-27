@@ -3,7 +3,6 @@ from sklearn.preprocessing import LabelEncoder, StandardScaler, OneHotEncoder
 from sklearn.model_selection import train_test_split
 from imblearn.over_sampling import SMOTE
 
-# Load the dataset
 file_path = 'datasets/predictive_maintenance.csv'
 data = pd.read_csv(file_path)
 
@@ -22,15 +21,10 @@ numerical_columns = data.select_dtypes(include=['float64', 'int64']).columns.dro
 scaler = StandardScaler()
 data[numerical_columns] = scaler.fit_transform(data[numerical_columns])
 
-
 X = data.drop(columns=['Failure'])
 y = data['Failure']
 
-smote = SMOTE(random_state=42)
-X_balanced, y_balanced = smote.fit_resample(X, y)
-
-X_train, X_test, y_train, y_test = train_test_split(X_balanced, y_balanced, test_size=0.2, random_state=42, stratify=y_balanced)
-
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
 print("Training Data Sample:\n", X_train.head())
 print("Training Labels Distribution:\n", y_train.value_counts())
