@@ -36,7 +36,7 @@ print("Training Data Sample:\n", X_train.head())
 print("Training Labels Distribution:\n", y_train.value_counts())
 
 
-
+#SVM
 from sklearn.svm import SVC
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
 
@@ -58,3 +58,6 @@ def train_and_evaluate_svm(X_train, y_train, X_test, y_test, kernel='rbf', class
 
 
 train_and_evaluate_svm(X_train, y_train, X_test, y_test)
+#########################################################
+
+#ANN
