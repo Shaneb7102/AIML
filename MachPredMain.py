@@ -1,51 +1,60 @@
 import pandas as pd
-from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.preprocessing import LabelEncoder, StandardScaler, OneHotEncoder
 from sklearn.model_selection import train_test_split
 from imblearn.over_sampling import SMOTE
 
-# Specify the path to your CSV file
+# Load the dataset
 file_path = 'datasets/predictive_maintenance.csv'
+data = pd.read_csv(file_path)
 
-# Load only the first 10,000 rows
-data = pd.read_csv(file_path, nrows=10000)
 
-# Drop unnecessary columns
-data.drop(columns=['UDI'], inplace=True, errors='ignore')
+data.drop(columns=['UDI', 'Product ID'], inplace=True, errors='ignore')
 
-# Encode categorical columns if they exist
-le = LabelEncoder()
 
-# Encode 'Failure Type' if it's present in the data
-if 'Failure Type' in data.columns:
-    data['Failure Type'] = le.fit_transform(data['Failure Type'])
-    print("Label Encoded Failure Types:\n", data['Failure Type'].head())
+data['Failure'] = data['Failure Type'].apply(lambda x: 0 if x == 'No Failure' else 1)
 
-# Encode 'Type' column if it exists in the data
-if 'Type' in data.columns:
-    data['Type'] = le.fit_transform(data['Type'])
+data.drop(columns=['Failure Type'], inplace=True)
 
-# Drop rows with empty values
-data_cleaned = data.dropna()
+data = pd.get_dummies(data, columns=['Type'], drop_first=True)
 
-# Standardize numerical columns
-# Identify numerical columns (excluding 'Failure Type')
-numerical_columns = data_cleaned.select_dtypes(include=['float64', 'int64']).columns.drop('Failure Type')
 
-# Initialize the scaler and apply it to the numerical columns
+numerical_columns = data.select_dtypes(include=['float64', 'int64']).columns.drop('Failure')
 scaler = StandardScaler()
-data_cleaned[numerical_columns] = scaler.fit_transform(data_cleaned[numerical_columns])
+data[numerical_columns] = scaler.fit_transform(data[numerical_columns])
 
-# Separate features and target
-X = data_cleaned.drop(columns=['Failure Type'])
-y = data_cleaned['Failure Type']
 
-# Handle class imbalance using SMOTE
+X = data.drop(columns=['Failure'])
+y = data['Failure']
+
 smote = SMOTE(random_state=42)
 X_balanced, y_balanced = smote.fit_resample(X, y)
 
-# Split the balanced data into training and test sets
 X_train, X_test, y_train, y_test = train_test_split(X_balanced, y_balanced, test_size=0.2, random_state=42, stratify=y_balanced)
 
-# Display the first few rows of the preprocessed training data
-print("Training Data:\n", X_train.head())
+
+print("Training Data Sample:\n", X_train.head())
 print("Training Labels Distribution:\n", y_train.value_counts())
+
+
+
+from sklearn.svm import SVC
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
+
+def train_and_evaluate_svm(X_train, y_train, X_test, y_test, kernel='rbf', class_weight='balanced', random_state=42):
+    
+    # Step 1: Initialize the SVM model
+    svm_model = SVC(kernel=kernel, class_weight=class_weight, random_state=random_state)
+    
+    # Step 2: Train the model
+    svm_model.fit(X_train, y_train)
+    
+    # Step 3: Make predictions
+    y_pred = svm_model.predict(X_test)
+    
+    # Step 4: Evaluate the model
+    print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
+    print("\nClassification Report:\n", classification_report(y_test, y_pred))
+    print("Accuracy:", accuracy_score(y_test, y_pred))
+
+
+train_and_evaluate_svm(X_train, y_train, X_test, y_test)
