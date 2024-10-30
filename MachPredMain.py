@@ -35,7 +35,7 @@ from sklearn.svm import SVC
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
 
 def train_and_evaluate_svm(X_train, y_train, X_test, y_test, kernel='rbf', class_weight='balanced', random_state=42):
-    
+    print("SVM Model:\n")
     # Step 1: Initialize the SVM model
     svm_model = SVC(kernel=kernel, class_weight=class_weight, random_state=random_state)
     
@@ -55,3 +55,22 @@ train_and_evaluate_svm(X_train, y_train, X_test, y_test)
 #########################################################
 
 #ANN
+from sklearn.neural_network import MLPClassifier
+def train_and_evaluate_ann(X_train, y_train, X_test, y_test, solver='adam', alpha=1e-5, random_state=42):
+    print("ANN Model:\n")
+    # Step 1: Initialize the ANN model
+    ann_model = MLPClassifier(solver=solver, alpha=alpha, random_state=random_state)
+    
+    # Step 2: Train the model
+    ann_model.fit(X_train, y_train)
+    
+    # Step 3: Make predictions
+    y_pred = ann_model.predict(X_test)
+    
+    # Step 4: Evaluate the model
+    print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
+    print("\nClassification Report:\n", classification_report(y_test, y_pred))
+    print("Accuracy:", accuracy_score(y_test, y_pred))
+
+
+train_and_evaluate_ann(X_train, y_train, X_test, y_test)
