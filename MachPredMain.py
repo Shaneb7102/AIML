@@ -1,30 +1,76 @@
 import pandas as pd
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder, StandardScaler, OneHotEncoder
+from sklearn.model_selection import train_test_split
+from imblearn.over_sampling import SMOTE
 
-# Specify the path to your CSV file
 file_path = 'datasets/predictive_maintenance.csv'
-
-# Load only the first 10,000 rows
-data = pd.read_csv(file_path, nrows=10000)
-
-# Drop unnecessary columns
-data.drop(columns=['UDI'], inplace=True, errors='ignore')
-
-# Encode categorical columns if they exist
-le = LabelEncoder()
-
-# Encode 'Failure Type' if it's present in the data
-if 'Failure Type' in data.columns:
-    data['Failure Type'] = le.fit_transform(data['Failure Type'])
-    print("Label Encoded Failure Types:\n", data[['Failure Type']])
+data = pd.read_csv(file_path)
 
 
-# Encode 'Type' column if it exists in the data
-if 'Type' in data.columns:
-    data['Type'] = le.fit_transform(data['Type'])
+data.drop(columns=['UDI', 'Product ID'], inplace=True, errors='ignore')
 
-# Drop rows with empty values
-data_cleaned = data.dropna()
 
-# Display the first few rows of the cleaned dataset
-print("Cleaned Data:\n", data_cleaned.head())
+data['Failure'] = data['Failure Type'].apply(lambda x: 0 if x == 'No Failure' else 1)
+
+data.drop(columns=['Failure Type'], inplace=True)
+
+data = pd.get_dummies(data, columns=['Type'], drop_first=True)
+
+
+numerical_columns = data.select_dtypes(include=['float64', 'int64']).columns.drop('Failure')
+scaler = StandardScaler()
+data[numerical_columns] = scaler.fit_transform(data[numerical_columns])
+
+X = data.drop(columns=['Failure'])
+y = data['Failure']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+print("Training Data Sample:\n", X_train.head())
+print("Training Labels Distribution:\n", y_train.value_counts())
+
+
+#SVM
+from sklearn.svm import SVC
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
+
+def train_and_evaluate_svm(X_train, y_train, X_test, y_test, kernel='rbf', class_weight='balanced', random_state=42):
+    print("SVM Model:\n")
+    # Step 1: Initialize the SVM model
+    svm_model = SVC(kernel=kernel, class_weight=class_weight, random_state=random_state)
+    
+    # Step 2: Train the model
+    svm_model.fit(X_train, y_train)
+    
+    # Step 3: Make predictions
+    y_pred = svm_model.predict(X_test)
+    
+    # Step 4: Evaluate the model
+    print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
+    print("\nClassification Report:\n", classification_report(y_test, y_pred))
+    print("Accuracy:", accuracy_score(y_test, y_pred))
+
+
+train_and_evaluate_svm(X_train, y_train, X_test, y_test)
+#########################################################
+
+#ANN
+from sklearn.neural_network import MLPClassifier
+def train_and_evaluate_ann(X_train, y_train, X_test, y_test, solver='adam', alpha=1e-5, random_state=42):
+    print("ANN Model:\n")
+    # Step 1: Initialize the ANN model
+    ann_model = MLPClassifier(solver=solver, alpha=alpha, random_state=random_state)
+    
+    # Step 2: Train the model
+    ann_model.fit(X_train, y_train)
+    
+    # Step 3: Make predictions
+    y_pred = ann_model.predict(X_test)
+    
+    # Step 4: Evaluate the model
+    print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
+    print("\nClassification Report:\n", classification_report(y_test, y_pred))
+    print("Accuracy:", accuracy_score(y_test, y_pred))
+
+
+train_and_evaluate_ann(X_train, y_train, X_test, y_test)
