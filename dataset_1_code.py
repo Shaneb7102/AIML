@@ -3,7 +3,7 @@ from sklearn.preprocessing import LabelEncoder, StandardScaler, OneHotEncoder
 from sklearn.model_selection import train_test_split
 from imblearn.over_sampling import SMOTE
 
-file_path = 'datasets/predictive_maintenance.csv'
+file_path = 'datasets/dataset_1.csv'
 data = pd.read_csv(file_path)
 
 
